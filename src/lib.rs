@@ -458,13 +458,13 @@ impl<K, V, S> SequenceTrie<K, V, S>
     }
 
     /// Return all the children of this node, in an arbitrary order.
-    pub fn children(&self) -> Vec<&Self> {
-        self.children.values().collect()
+    pub fn children(&self) -> impl Iterator<Item = &Self> {
+        self.children.values()
     }
 
     /// Children of this node, with their associated keys in arbitrary order.
-    pub fn children_with_keys(&self) -> Vec<(&K, &Self)> {
-        self.children.iter().collect()
+    pub fn children_with_keys(&self) -> impl Iterator<Item=(&K, &Self)> {
+        self.children.iter()
     }
 }
 
