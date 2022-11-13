@@ -4,8 +4,11 @@
 
 #[cfg(not(feature = "btreemap"))]
 use std::hash::Hash;
-#[cfg(not(feature = "btreemap"))]
+#[cfg(all(not(feature = "btreemap"), not(feature = "hashbrown")))]
 use std::collections::hash_map::{self, HashMap};
+
+#[cfg(feature = "hashbrown")]
+use hashbrown::{hash_map, HashMap};
 
 #[cfg(feature = "btreemap")]
 use std::collections::{btree_map, BTreeMap};
