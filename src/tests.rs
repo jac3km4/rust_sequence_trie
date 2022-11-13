@@ -22,7 +22,7 @@ fn get() {
                 (vec!['a', 'b', 'c', 'd'], Some(4u32)),
                 (vec!['a', 'b', 'x', 'y'], Some(25u32)),
                 (vec!['b', 'x', 'y'], None)];
-    for &(ref key, value) in data.iter() {
+    for &(ref key, value) in &data {
         assert_eq!(trie.get(key), value.as_ref());
     }
 }
@@ -47,7 +47,7 @@ fn get_ancestor() {
                 (vec!['a', 'b', 'x', 'y'], 25u32),
                 (vec!['p', 'q'], 0u32),
                 (vec!['a', 'p', 'q'], 1u32)];
-    for &(ref key, value) in data.iter() {
+    for &(ref key, value) in &data {
         assert_eq!(*trie.get_ancestor(key).unwrap(), value);
     }
 }
@@ -196,7 +196,7 @@ fn string_trie() {
     trie.insert_owned(vec!["hello".to_string(), "world".to_string()], ());
     trie.insert(&["hello".to_string(), "world".to_string()], ());
     trie.insert(vec!["hello", "world"], ());
-    trie.insert(["hello", "world"].iter().map(|&x| x), ());
+    trie.insert(["hello", "world"].iter().copied(), ());
 }
 
 #[test]
@@ -212,8 +212,8 @@ fn map() {
 
 #[test]
 fn non_static_lifetime() {
-    let a = format!("a");
-    let b = format!("b");
+    let a = "a".to_string();
+    let b = "b".to_string();
     let mut trie: SequenceTrie<&str, u32> = SequenceTrie::new();
 
     trie.insert(&[&a[..], &b[..]], 0u32);

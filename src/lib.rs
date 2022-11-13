@@ -220,9 +220,9 @@ impl<K, V, S> SequenceTrie<K, V, S>
     ///
     /// Returns `None` if the key did not already correspond to a value, otherwise the old value is
     /// returned.
-    pub fn insert<'key, I, Q: 'key + ?Sized>(&mut self, key: I, value: V) -> Option<V>
+    pub fn insert<'key, I, Q>(&mut self, key: I, value: V) -> Option<V>
         where I: IntoIterator<Item = &'key Q>,
-              Q: ToOwned<Owned = K>,
+              Q: 'key + ?Sized + ToOwned<Owned = K>,
               K: Borrow<Q>
     {
         self.insert_owned(key.into_iter().map(ToOwned::to_owned), value)
@@ -259,19 +259,19 @@ impl<K, V, S> SequenceTrie<K, V, S>
     }
 
     /// Finds a reference to a key's value, if it has one.
-    pub fn get<'key, I, Q: ?Sized>(&self, key: I) -> Option<&V>
+    pub fn get<'key, I, Q>(&self, key: I) -> Option<&V>
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         self.get_node(key).and_then(|node| node.value.as_ref())
     }
 
     /// Finds a reference to a key's node, if it has one.
-    pub fn get_node<'key, I, Q: ?Sized>(&self, key: I) -> Option<&SequenceTrie<K, V, S>>
+    pub fn get_node<'key, I, Q>(&self, key: I) -> Option<&SequenceTrie<K, V, S>>
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         let mut current_node = self;
 
@@ -286,19 +286,19 @@ impl<K, V, S> SequenceTrie<K, V, S>
     }
 
     /// Finds a mutable reference to a key's value, if it has one.
-    pub fn get_mut<'key, I, Q: ?Sized>(&mut self, key: I) -> Option<&mut V>
+    pub fn get_mut<'key, I, Q>(&mut self, key: I) -> Option<&mut V>
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         self.get_node_mut(key).and_then(|node| node.value.as_mut())
     }
 
     /// Finds a mutable reference to a key's node, if it has one.
-    pub fn get_node_mut<'key, I, Q: ?Sized>(&mut self, key: I) -> Option<&mut SequenceTrie<K, V, S>>
+    pub fn get_node_mut<'key, I, Q>(&mut self, key: I) -> Option<&mut SequenceTrie<K, V, S>>
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         let mut current_node = Some(self);
 
@@ -313,10 +313,10 @@ impl<K, V, S> SequenceTrie<K, V, S>
     }
 
     /// Finds the longest prefix of nodes which match the given key.
-    pub fn get_prefix_nodes<'key, I, Q: ?Sized>(&self, key: I) -> Vec<&SequenceTrie<K, V, S>>
+    pub fn get_prefix_nodes<'key, I, Q>(&self, key: I) -> Vec<&SequenceTrie<K, V, S>>
         where I: 'key + IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         self.prefix_iter(key).collect()
     }
@@ -324,10 +324,10 @@ impl<K, V, S> SequenceTrie<K, V, S>
     /// Finds the value of the nearest ancestor with a non-empty value, if one exists.
     ///
     /// If all ancestors have empty (`None`) values, `None` is returned.
-    pub fn get_ancestor<'key, I, Q: ?Sized>(&self, key: I) -> Option<&V>
+    pub fn get_ancestor<'key, I, Q>(&self, key: I) -> Option<&V>
         where I: 'key + IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         self.get_ancestor_node(key).and_then(|node| node.value.as_ref())
     }
@@ -335,10 +335,10 @@ impl<K, V, S> SequenceTrie<K, V, S>
     /// Finds the nearest ancestor with a non-empty value, if one exists.
     ///
     /// If all ancestors have empty (`None`) values, `None` is returned.
-    pub fn get_ancestor_node<'key, I, Q: ?Sized>(&self, key: I) -> Option<&SequenceTrie<K, V, S>>
+    pub fn get_ancestor_node<'key, I, Q>(&self, key: I) -> Option<&SequenceTrie<K, V, S>>
         where I: 'key + IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         self.prefix_iter(key)
             .filter(|node| node.value.is_some())
@@ -356,10 +356,10 @@ impl<K, V, S> SequenceTrie<K, V, S>
     /// from the key node until a node with a non-empty value or children is reached.
     ///
     /// If the key doesn't match a node in the Trie, no action is taken.
-    pub fn remove<'key, I, Q: ?Sized>(&mut self, key: I)
+    pub fn remove<'key, I, Q>(&mut self, key: I)
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         self.remove_recursive(key);
     }
@@ -370,10 +370,10 @@ impl<K, V, S> SequenceTrie<K, V, S>
     /// Return `true` if the node should be deleted.
     ///
     /// See `remove` above.
-    fn remove_recursive<'key, I, Q: ?Sized>(&mut self, key: I) -> bool
+    fn remove_recursive<'key, I, Q>(&mut self, key: I) -> bool
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         let mut fragments = key.into_iter();
         match fragments.next() {
@@ -408,7 +408,7 @@ impl<K, V, S> SequenceTrie<K, V, S>
     /// If `f` returns a value, it replaces the value at that node.
     /// Otherwise, the node's value remains unchanged.
     pub fn map<F>(&mut self, f: F) where F: Fn(&Self) -> Option<V> {
-        self.map_rec(&f)
+        self.map_rec(&f);
     }
 
     /// Internal version of map that takes the closure by reference.
@@ -443,12 +443,12 @@ impl<K, V, S> SequenceTrie<K, V, S>
     }
 
     /// Returns an iterator over the longest prefix of nodes which match the given key.
-    pub fn prefix_iter<'trie, 'key, I, Q: ?Sized>(&'trie self,
+    pub fn prefix_iter<'trie, 'key, I, Q>(&'trie self,
                                                   key: I)
                                                   -> PrefixIter<'trie, 'key, K, V, Q, I::IntoIter, S>
         where I: IntoIterator<Item = &'key Q>,
               K: Borrow<Q>,
-              Q: TrieKey + 'key
+              Q: ?Sized + TrieKey + 'key
     {
         PrefixIter {
             next_node: Some(self),
@@ -463,13 +463,13 @@ impl<K, V, S> SequenceTrie<K, V, S>
     }
 
     /// Children of this node, with their associated keys in arbitrary order.
-    pub fn children_with_keys<'a>(&'a self) -> Vec<(&'a K, &'a Self)> {
+    pub fn children_with_keys(&self) -> Vec<(&K, &Self)> {
         self.children.iter().collect()
     }
 }
 
 /// Iterator over the keys and values of a `SequenceTrie`.
-pub struct Iter<'a, K: 'a, V: 'a, S: 'a = RandomState>
+pub struct Iter<'a, K, V: 'a, S = RandomState>
     where K: TrieKey,
           S: BuildHasher + Default
 {
@@ -483,7 +483,7 @@ pub struct Iter<'a, K: 'a, V: 'a, S: 'a = RandomState>
 pub type KeyValuePair<'a, K, V> = (Vec<&'a K>, &'a V);
 
 /// Iterator over the keys of a `SequenceTrie`.
-pub struct Keys<'a, K: 'a, V: 'a, S: 'a = RandomState>
+pub struct Keys<'a, K, V: 'a, S = RandomState>
     where K: TrieKey,
           S: BuildHasher + Default
 {
@@ -491,7 +491,7 @@ pub struct Keys<'a, K: 'a, V: 'a, S: 'a = RandomState>
 }
 
 /// Iterator over the values of a `SequenceTrie`.
-pub struct Values<'a, K: 'a, V: 'a, S: 'a = RandomState>
+pub struct Values<'a, K, V: 'a, S = RandomState>
     where K: TrieKey,
           S: BuildHasher + Default
 {
@@ -499,7 +499,7 @@ pub struct Values<'a, K: 'a, V: 'a, S: 'a = RandomState>
 }
 
 /// Information stored on the iteration stack whilst exploring.
-struct StackItem<'a, K: 'a, V: 'a, S: 'a = RandomState>
+struct StackItem<'a, K, V: 'a, S = RandomState>
     where K: TrieKey,
           S: BuildHasher + Default
 {
@@ -510,7 +510,7 @@ struct StackItem<'a, K: 'a, V: 'a, S: 'a = RandomState>
 }
 
 /// Delayed action type for iteration stack manipulation.
-enum IterAction<'a, K: 'a, V: 'a, S: 'a>
+enum IterAction<'a, K, V: 'a, S>
     where K: TrieKey,
           S: BuildHasher + Default
 {
@@ -615,25 +615,21 @@ impl<K, V, S> Default for SequenceTrie<K, V, S>
 }
 
 /// Iterator over the longest prefix of nodes which matches a key.
-pub struct PrefixIter<'trie, 'key, K, V, Q: ?Sized, I, S = RandomState>
-    where K: 'trie + TrieKey,
-          V: 'trie,
-          I: 'key + Iterator<Item = &'key Q>,
-          K: Borrow<Q>,
-          Q: TrieKey + 'key,
-          S: 'trie + BuildHasher + Default
+pub struct PrefixIter<'trie, 'key, K, V, Q, I, S = RandomState>
+    where K: Borrow<Q> + TrieKey,
+          I: Iterator<Item = &'key Q>,
+          Q: ?Sized + TrieKey + 'key,
+          S: BuildHasher + Default
 {
     next_node: Option<&'trie SequenceTrie<K, V, S>>,
     fragments: I,
     _phantom: PhantomData<&'key I>,
 }
 
-impl<'trie, 'key, K, V, Q: ?Sized, I, S> Iterator for PrefixIter<'trie, 'key, K, V, Q, I, S>
-    where K: 'trie + TrieKey,
-          V: 'trie,
-          I: 'key + Iterator<Item = &'key Q>,
-          K: Borrow<Q>,
-          Q: TrieKey + 'key,
+impl<'trie, 'key, K, V, Q, I, S> Iterator for PrefixIter<'trie, 'key, K, V, Q, I, S>
+    where K: Borrow<Q> + TrieKey,
+          I: Iterator<Item = &'key Q>,
+          Q: ?Sized + TrieKey,
           S: BuildHasher + Default
 {
     type Item = &'trie SequenceTrie<K, V, S>;
@@ -641,7 +637,7 @@ impl<'trie, 'key, K, V, Q: ?Sized, I, S> Iterator for PrefixIter<'trie, 'key, K,
     fn next(&mut self) -> Option<Self::Item> {
         if let Some(current_node) = self.next_node.take() {
             if let Some(fragment) = self.fragments.next() {
-                self.next_node = current_node.children.get(fragment)
+                self.next_node = current_node.children.get(fragment);
             }
 
             return Some(current_node);
@@ -651,12 +647,7 @@ impl<'trie, 'key, K, V, Q: ?Sized, I, S> Iterator for PrefixIter<'trie, 'key, K,
     }
 
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let lower = if self.next_node.is_some() {
-            1
-        } else {
-            0
-        };
-
+        let lower = usize::from(self.next_node.is_some());
         (lower, self.fragments.size_hint().1)
     }
 }
